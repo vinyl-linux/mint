@@ -7,26 +7,26 @@ Mint, a contraction of Message Interchange, is a binary message format (similar 
 ```protobuf
 // WeatherForecast provides a forecast for the upcoming day
 message WeatherForecast {
-	// ForecastedAt contains the datetime at which this forecast
-	// was created
-	// +mint:validate:date_in_past
-	// +mint:transform:date_in_utc
-	datetime ForecastedAt = 1;
-	
-	// Location contains a reference to the specified
-	// location of this forecast
-	// +mint:validate:string_not_empty
-	string Location = 2;
+    // ForecastedAt contains the datetime at which this forecast
+    // was created
+    // +mint:validate:date_in_past
+    // +mint:transform:date_in_utc
+    datetime ForecastedAt = 1;
 
-	// Temperature is a float pointing to the forecast
-	// temperature
-	// +custom:validate:seems_valid
-	float Temperature = 3;
+    // Location contains a reference to the specified
+    // location of this forecast
+    // +mint:validate:string_not_empty
+    string Location = 2;
 
-	// CloudCoverage provides how cloudy it is in
-	// oktas
-	// +mint:validate:int_range:0:8
-	int CloudCoverage = 4;
+    // Temperature is a float pointing to the forecast
+    // temperature
+    // +custom:validate:seems_valid
+    float Temperature = 3;
+
+    // CloudCoverage provides how cloudy it is in
+    // oktas
+    // +custom:validate:valid_okta
+    int CloudCoverage = 4;
 }
 ```
 
