@@ -1,11 +1,18 @@
 package parser
 
 import (
-	"bytes"
-	"fmt"
+	"io"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
+)
+
+const (
+	suffix = ".mint"
 )
 
 type Document struct {
@@ -17,8 +24,8 @@ type Document struct {
 type Entry struct {
 	Pos lexer.Position
 
-	Message *Message ` @@`
-	Enum    *Enum    `| @@`
+	Type *Type ` @@`
+	Enum *Enum `| @@`
 }
 
 type Value struct {
@@ -59,6 +66,14 @@ type Enum struct {
 	Values []*EnumEntry `"{" ( @@ ( ";" )* )* "}"`
 }
 
+func (e Enum) name() string {
+	return e.Name
+}
+
+func (e Enum) pos() lexer.Position {
+	return e.Pos
+}
+
 type EnumEntry struct {
 	Pos lexer.Position
 
@@ -72,11 +87,19 @@ type EnumValue struct {
 	Value int    `"=" @( [ "-" ] Int )`
 }
 
-type Message struct {
+type Type struct {
 	Pos lexer.Position
 
-	Name    string          `"message" @Ident`
+	Name    string          `"type" @Ident`
 	Entries []*MessageEntry `"{" @@* "}"`
+}
+
+func (t Type) name() string {
+	return t.Name
+}
+
+func (t Type) pos() lexer.Position {
+	return t.Pos
 }
 
 type MessageEntry struct {
@@ -99,9 +122,9 @@ type Annotation struct {
 type Field struct {
 	Pos lexer.Position
 
-	Type *Type  `@@`
-	Name string `@Ident`
-	Tag  int    `"=" @Int`
+	DataType *DataType `@@`
+	Name     string    `@Ident`
+	Tag      int       `"=" @Int`
 }
 
 type Scalar int
@@ -141,7 +164,7 @@ func (s *Scalar) Parse(lex *lexer.PeekingLexer) error {
 	return nil
 }
 
-type Type struct {
+type DataType struct {
 	Pos lexer.Position
 
 	Scalar    Scalar   `  @@`
@@ -156,24 +179,51 @@ type MapType struct {
 	Value *Type `"," @@ ">"`
 }
 
-type ParseError struct {
-	err error
-}
+var p = participle.MustBuild[Document](participle.UseLookahead(2), participle.Elide("Comment"), participle.Unquote())
 
-func (p ParseError) Error() string {
-	return fmt.Sprint("error at position ", p.err.(participle.Error).Position(), p.err)
-}
-
-func Parse(in []byte) (*AST, error) {
-	p, err := participle.Build[Document](participle.UseLookahead(2), participle.Elide("Comment"), participle.Unquote())
+func Parse(fn string, in io.Reader) (*AST, error) {
+	d, err := p.Parse(fn, in)
 	if err != nil {
-		return nil, ParseError{err}
+		return nil, err
 	}
 
-	d, err := p.Parse("", bytes.NewBuffer(in))
+	return toAST(*d)
+}
+
+func ParseDir(dir string) (*AST, error) {
+	asts := make([]*AST, 0)
+
+	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if d.IsDir() {
+			return nil
+		}
+
+		if strings.HasSuffix(path, suffix) {
+			f, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+
+			defer f.Close()
+
+			a, err := Parse(path, f)
+			if err != nil {
+				return err
+			}
+
+			asts = append(asts, a)
+		}
+
+		return nil
+	})
+
 	if err != nil {
-		return nil, ParseError{err}
+		return nil, err
 	}
 
-	return toAST(*d), nil
+	return merge(asts)
 }
