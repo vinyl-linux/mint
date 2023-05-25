@@ -2,67 +2,31 @@ package parser
 
 import (
 	"fmt"
-	"strings"
+	"sort"
 
 	"github.com/alecthomas/participle/v2/lexer"
 )
 
-type named interface {
-	name() string
-	pos() lexer.Position
+// missingTagErr describes occasions where a type has a
+// missing tag; all tags (even deprecated ones) must still
+// exist in a message or things break
+type missingTagErr struct {
+	t   string
+	tag int
 }
 
-type collision struct {
-	t         string
-	name      string
-	locations []lexer.Position
-}
-
-func (c collision) String() string {
-	cols := make([]string, len(c.locations))
-	for i, l := range c.locations {
-		cols[i] = l.String()
-	}
-
-	return fmt.Sprintf("%s %q has been defined in %d places: %s",
-		c.t,
-		c.name,
-		len(c.locations),
-		strings.Join(cols, "\n\t"),
+// Error returns an error message describing which tag is
+// missing in which type
+func (e missingTagErr) Error() string {
+	return fmt.Sprintf("missing tag %d for type %s",
+		e.tag,
+		e.t,
 	)
 }
 
-type collisionsErr struct {
-	collisions []collision
-}
-
-func (c collisionsErr) Error() string {
-	out := make([]string, len(c.collisions))
-
-	for i, col := range c.collisions {
-		out[i] = col.String()
-	}
-
-	return strings.Join(out, "\n\n")
-}
-
-func namedSlice(t []annotatedType, e []Enum) (out []named) {
-	out = make([]named, len(t)+len(e))
-	idx := 0
-
-	for _, elem := range t {
-		out[idx] = elem
-		idx++
-	}
-
-	for _, elem := range e {
-		out[idx] = elem
-		idx++
-	}
-
-	return
-}
-
+// merge takes a slice of asts, ensures uniqueness of names, and
+// returns either an error describing collisions, or the union of
+// all ASTs
 func merge(in []*AST) (out *AST, err error) {
 	names := make(map[string][]lexer.Position)
 	intermediateOut := new(AST)
@@ -92,21 +56,99 @@ func merge(in []*AST) (out *AST, err error) {
 	return intermediateOut, nil
 }
 
-func toCollisionError(t string, names map[string][]lexer.Position) error {
-	collisions := make([]collision, 0)
-	for name, locs := range names {
-		if len(locs) > 1 {
-			collisions = append(collisions, collision{
-				t:         t,
-				name:      name,
-				locations: locs,
-			})
+// toAnnotatedType accepts a Type definiton from our parser, and
+// generates an annotated type.
+//
+// To wit:
+//  1. Iterate through the entries in a type
+//  2. Determine which validations, transforms, and doc strings belong to which 'thing'
+//  3. Ensure each entry is unique in name
+//  4. Ensure each entry has a unique position tag
+//
+// Groupings occur by parsing each entry until we hit a field definition, and then
+// merging those entries into a single definition.
+func toAnnotatedType(m Type) (a annotatedType, err error) {
+	a.Pos = m.Pos
+	a.Name = m.Name
+	a.Entries = make([]annotatedEntry, 0)
+
+	names := make(map[string][]lexer.Position)
+	tags := make(map[string][]lexer.Position)
+	tagValues := make([]int, 0)
+
+	ae := annotatedEntry{}
+	for _, e := range m.Entries {
+		if e.Annotation != nil {
+			switch e.Annotation.Type {
+			case "doc":
+				ae.AppendDocString(e.Annotation.Value)
+			case "validate":
+				ae.AppendValidation(validation{
+					IsCustom: e.Annotation.Provider == "custom",
+					Function: e.Annotation.Func,
+				})
+			case "transform":
+				ae.AppendTransformation(transformation{
+					IsCustom: e.Annotation.Provider == "custom",
+					Function: e.Annotation.Func,
+				})
+			}
+
+			continue
+		}
+
+		// If we get here, we get to a field and so are finishing this
+		// annotated message
+		if _, ok := names[e.Field.Name]; !ok {
+			names[e.Field.Name] = make([]lexer.Position, 0)
+		}
+
+		names[e.Field.Name] = append(names[e.Field.Name], e.Field.Pos)
+
+		tagStr := intToStr(e.Field.Tag)
+		if _, ok := tags[tagStr]; !ok {
+			tags[tagStr] = make([]lexer.Position, 0)
+		}
+
+		tags[tagStr] = append(tags[tagStr], e.Field.Pos)
+
+		tagValues = append(tagValues, e.Field.Tag)
+
+		ae.Field = *e.Field
+		a.Entries = append(a.Entries, ae)
+		ae = annotatedEntry{}
+	}
+
+	// Ensure names are unique
+	err = toCollisionError(a.Name+" field", names)
+	if err != nil {
+		return
+	}
+
+	// Ensure tags are unique
+	err = toCollisionError(a.Name+" tag value", tags)
+	if err != nil {
+		return
+	}
+
+	// Ensure there are no missing tags
+	is := sort.IntSlice(tagValues)
+	is.Sort()
+
+	for idx, v := range is {
+		if idx != v {
+			err = missingTagErr{
+				t:   a.Name,
+				tag: idx,
+			}
+
+			return
 		}
 	}
 
-	if len(collisions) != 0 {
-		return collisionsErr{collisions}
-	}
+	return
+}
 
-	return nil
+func intToStr(i int) string {
+	return fmt.Sprintf("%d", i)
 }
