@@ -187,7 +187,14 @@ func Parse(fn string, in io.Reader) (*AST, error) {
 		return nil, err
 	}
 
-	return toAST(*d)
+	a, err := toAST(*d)
+	if err != nil {
+		return nil, err
+	}
+
+	// Because the solver does some magic around uniqueness
+	// we need to call it here for a len 1 slice
+	return merge([]*AST{a})
 }
 
 func ParseDir(dir string) (*AST, error) {
