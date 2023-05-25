@@ -94,14 +94,6 @@ type Type struct {
 	Entries []*MessageEntry `"{" @@* "}"`
 }
 
-func (t Type) name() string {
-	return t.Name
-}
-
-func (t Type) pos() lexer.Position {
-	return t.Pos
-}
-
 type MessageEntry struct {
 	Pos lexer.Position
 

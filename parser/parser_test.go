@@ -17,6 +17,7 @@ func TestParse(t *testing.T) {
 		expect    *AST
 		expectErr bool
 	}{
+		{"invalid input errors", "hello, world!", nil, true},
 		{"empty body returns empty ast", "", emptyAST, false},
 		{"colliding type names error", collidingNames, nil, true},
 		{"colliding field names error", collidingFieldNames, nil, true},
@@ -44,6 +45,26 @@ func TestParse(t *testing.T) {
 				diffs := dmp.DiffMain(expectStr, receivedStr, false)
 
 				t.Error(dmp.DiffPrettyText(diffs))
+			}
+		})
+	}
+}
+
+func TestParseDir(t *testing.T) {
+	for _, test := range []struct {
+		dir       string
+		expectErr bool
+	}{
+		{"testdata/valid-documents", false},
+		{"testdata/nonsuch", true},
+		{"testdata/invalid-document", true},
+	} {
+		t.Run(test.dir, func(t *testing.T) {
+			_, err := ParseDir(test.dir)
+			if err == nil && test.expectErr {
+				t.Errorf("expected error, received none")
+			} else if err != nil && !test.expectErr {
+				t.Errorf("unexpected error %#v", err)
 			}
 		})
 	}

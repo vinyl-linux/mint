@@ -54,14 +54,6 @@ type annotatedEntry struct {
 	Transformations []transformation
 }
 
-func (ae annotatedEntry) name() string {
-	return ae.Name
-}
-
-func (ae annotatedEntry) pos() lexer.Position {
-	return ae.Pos
-}
-
 func (ae *annotatedEntry) AppendDocString(s string) {
 	if len(ae.DocString) == 0 {
 		ae.DocString = s
