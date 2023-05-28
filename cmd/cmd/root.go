@@ -91,8 +91,10 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// #nosec: G104
-		os.MkdirAll(cfgPath, 0700)
+		err := os.MkdirAll(cfgPath, 0700)
+		if err != nil {
+			panic(err)
+		}
 
 		viper.AddConfigPath(cfgPath)
 		viper.SetConfigType("yaml")
