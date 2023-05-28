@@ -1,3 +1,4 @@
+// nolint: govet, golint
 package parser
 
 import (
@@ -131,11 +132,13 @@ func Parse(fn string, in io.Reader) (*AST, error) {
 }
 
 func ParseFile(fn string) (*AST, error) {
+	// #nosec: G304
 	f, err := os.Open(fn)
 	if err != nil {
 		return nil, err
 	}
 
+	// #nosec: G307
 	defer f.Close()
 
 	return Parse(fn, f)
@@ -154,11 +157,13 @@ func ParseDir(dir string) (*AST, error) {
 		}
 
 		if strings.HasSuffix(path, suffix) {
+			// #nosec: G304
 			f, err := os.Open(path)
 			if err != nil {
 				return err
 			}
 
+			// #nosec: G307
 			defer f.Close()
 
 			a, err := parse(path, f)
