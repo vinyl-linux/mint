@@ -1,6 +1,6 @@
 # mint
 
-[![Coverage Status](https://coveralls.io/repos/github/vinyl-linux/vin/badge.svg?branch=main)](https://coveralls.io/github/vinyl-linux/vin?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/vinyl-linux/mint/badge.svg?branch=main)](https://coveralls.io/github/vinyl-linux/mint?branch=main)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=vinyl-linux_mint&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=vinyl-linux_mint)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=vinyl-linux_mint&metric=security_rating)](https://sonarcloud.io/dashboard?id=vinyl-linux_mint)
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=vinyl-linux_mint&metric=sqale_index)](https://sonarcloud.io/dashboard?id=vinyl-linux_mint)
