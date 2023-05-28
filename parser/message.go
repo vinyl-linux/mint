@@ -1,6 +1,9 @@
 package parser
 
 import (
+	"fmt"
+	"unicode"
+
 	"github.com/alecthomas/participle/v2/lexer"
 )
 
@@ -79,6 +82,36 @@ func (ae *annotatedEntry) AppendTransformation(v transformation) {
 	ae.Transformations = append(ae.Transformations, v)
 }
 
+// IsValidType returns an error unless:
+//
+//  1. The specified type starts with a lower case and exists in our base scalars map; or
+//  2. It starts with an upper case and exists as a Type or Enum in our AST
+func (ae *annotatedEntry) IsValidType(names map[string][]lexer.Position) error {
+	// If a scalar, validate that.
+	if ae.DataType.Scalar != nil {
+		if !scalarOrNames(ae.DataType.Scalar.Type, names) {
+			return incorrectTypeErr{
+				t:   ae.DataType.Scalar.Type,
+				pos: ae.DataType.Pos,
+			}
+		}
+
+		return nil
+	}
+
+	// Else, validate the K and V from a map
+	for _, s := range []string{ae.DataType.Map.Key, ae.DataType.Map.Value} {
+		if !scalarOrNames(s, names) {
+			return incorrectTypeErr{
+				t:   s,
+				pos: ae.DataType.Pos,
+			}
+		}
+	}
+
+	return nil
+}
+
 type validation struct {
 	IsCustom bool
 	Function string
@@ -87,4 +120,23 @@ type validation struct {
 type transformation struct {
 	IsCustom bool
 	Function string
+}
+
+type incorrectTypeErr struct {
+	t   string
+	pos lexer.Position
+}
+
+func (e incorrectTypeErr) Error() string {
+	return fmt.Sprintf("Unrecognised data type %s at %s", e.t, e.pos.String())
+}
+
+func scalarOrNames(s string, names map[string][]lexer.Position) bool {
+	if unicode.IsLower(rune(s[0])) {
+		_, ok := scalars[s]
+		return ok
+	}
+
+	_, ok := names[s]
+	return ok
 }

@@ -24,6 +24,9 @@ func TestParse(t *testing.T) {
 		{"colliding field tags error", collidingTags, nil, true},
 		{"missing field tags error", missingFields, nil, true},
 		{"valid input works", validInput, fullAST, false},
+		{"invalid scalar type errors", invalidScalar, nil, true},
+		{"invalid map key type errors", invalidMapKey, nil, true},
+		{"invalid map value type errors", invalidMapValue, nil, true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			received, err := Parse(test.name, strings.NewReader(test.body))
@@ -50,6 +53,25 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestParseFile(t *testing.T) {
+	for _, test := range []struct {
+		fn        string
+		expectErr bool
+	}{
+		{"testdata/nonsuch.mint", true},
+		{"testdata/valid-documents/location.mint", false},
+	} {
+		t.Run(test.fn, func(t *testing.T) {
+			_, err := ParseFile(test.fn)
+			if err == nil && test.expectErr {
+				t.Errorf("expected error, received none")
+			} else if err != nil && !test.expectErr {
+				t.Errorf("unexpected error %s", err)
+			}
+		})
+	}
+}
+
 func TestParseDir(t *testing.T) {
 	for _, test := range []struct {
 		dir       string
@@ -64,7 +86,7 @@ func TestParseDir(t *testing.T) {
 			if err == nil && test.expectErr {
 				t.Errorf("expected error, received none")
 			} else if err != nil && !test.expectErr {
-				t.Errorf("unexpected error %#v", err)
+				t.Errorf("unexpected error %s", err)
 			}
 		})
 	}
@@ -98,7 +120,15 @@ var (
 									Line:     8,
 									Column:   3,
 								},
-								Scalar: String,
+								Scalar: &Scalar{
+									Pos: lexer.Position{
+										Filename: "valid input works",
+										Offset:   178,
+										Line:     8,
+										Column:   3,
+									},
+									Type: "string",
+								},
 							},
 							Name: "Hello",
 							Tag:  0,
@@ -119,6 +149,66 @@ var (
 							},
 						},
 					},
+					{
+						Field: Field{
+							Pos: lexer.Position{
+								Filename: "valid input works",
+								Offset:   228,
+								Line:     11,
+								Column:   3,
+							},
+							DataType: &DataType{
+								Pos: lexer.Position{
+									Filename: "valid input works",
+									Offset:   228,
+									Line:     11,
+									Column:   3,
+								},
+								Scalar: &Scalar{
+									Pos: lexer.Position{
+										Filename: "valid input works",
+										Offset:   228,
+										Line:     11,
+										Column:   3,
+									},
+									Type: "Bar",
+								},
+							},
+							Name: "Bar",
+							Tag:  1,
+						},
+						DocString: "Some bar value",
+					},
+					{
+						Field: Field{
+							Pos: lexer.Position{
+								Filename: "valid input works",
+								Offset:   244,
+								Line:     13,
+								Column:   3,
+							},
+							DataType: &DataType{
+								Pos: lexer.Position{
+									Filename: "valid input works",
+									Offset:   244,
+									Line:     13,
+									Column:   3,
+								},
+								Map: &MapType{
+									Pos: lexer.Position{
+										Filename: "valid input works",
+										Offset:   244,
+										Line:     13,
+										Column:   3,
+									},
+									Key:   "string",
+									Value: "int",
+								},
+							},
+							Name: "MappyMap",
+							Tag:  2,
+						},
+					},
 				},
 			},
 		},
@@ -126,8 +216,8 @@ var (
 			{
 				Pos: lexer.Position{
 					Filename: "valid input works",
-					Offset:   199,
-					Line:     11,
+					Offset:   278,
+					Line:     16,
 					Column:   1,
 				},
 				Name: "Bar",
@@ -135,15 +225,15 @@ var (
 					{
 						Pos: lexer.Position{
 							Filename: "valid input works",
-							Offset:   212,
-							Line:     12,
+							Offset:   291,
+							Line:     17,
 							Column:   3,
 						},
 						Value: &EnumValue{
 							Pos: lexer.Position{
 								Filename: "valid input works",
-								Offset:   212,
-								Line:     12,
+								Offset:   291,
+								Line:     17,
 								Column:   3,
 							},
 							Key:   "A",
@@ -153,32 +243,33 @@ var (
 					{
 						Pos: lexer.Position{
 							Filename: "valid input works",
-							Offset:   221,
-							Line:     13,
+							Offset:   300,
+							Line:     18,
 							Column:   3,
 						},
 						Value: &EnumValue{
 							Pos: lexer.Position{
 								Filename: "valid input works",
-								Offset:   221,
-								Line:     13,
+								Offset:   300,
+								Line:     18,
 								Column:   3,
 							},
 							Key:   "B",
-							Value: 2},
+							Value: 2,
+						},
 					},
 					{
 						Pos: lexer.Position{
 							Filename: "valid input works",
-							Offset:   230,
-							Line:     14,
+							Offset:   309,
+							Line:     19,
 							Column:   3,
 						},
 						Value: &EnumValue{
 							Pos: lexer.Position{
 								Filename: "valid input works",
-								Offset:   230,
-								Line:     14,
+								Offset:   309,
+								Line:     19,
 								Column:   3,
 							},
 							Key:   "C",
@@ -221,12 +312,34 @@ type Foo {
   +mint:transform:to_lowercase
   +custom:transform:to_korean
   string Hello = 0;
+
+  +mint:doc:"Some bar value"
+  Bar Bar = 1;
+
+  map<string, int> MappyMap = 2;
 }
 
 enum Bar {
   A = 1;
   B = 2;
   C = 3;
+}
+`
+
+	invalidScalar = `
+type Foo {
+  str Bar = 0;
+}
+`
+
+	invalidMapKey = `
+type Foo {
+  map<Bar, string> BarMap = 0;
+}
+`
+	invalidMapValue = `
+type Foo {
+  map<string, Bar> BarMap = 0;
 }
 `
 )

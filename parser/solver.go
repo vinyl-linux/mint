@@ -53,6 +53,16 @@ func merge(in []*AST) (out *AST, err error) {
 		return
 	}
 
+	// Validate all type fields against types/ enums, scalars map
+	for _, t := range intermediateOut.Types {
+		for _, e := range t.Entries {
+			err = e.IsValidType(names)
+			if err != nil {
+				return
+			}
+		}
+	}
+
 	return intermediateOut, nil
 }
 

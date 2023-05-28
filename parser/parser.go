@@ -28,37 +28,6 @@ type Entry struct {
 	Enum *Enum `| @@`
 }
 
-type Value struct {
-	Pos lexer.Position
-
-	String    *string  `  @String`
-	Number    *float64 `| @Float`
-	Int       *int64   `| @Int`
-	Bool      *bool    `| (@"true" | "false")`
-	Reference *string  `| @Ident @( "." Ident )*`
-	Map       *Map     `| @@`
-	Array     *Array   `| @@`
-}
-
-type Array struct {
-	Pos lexer.Position
-
-	Elements []*Value `"[" ( @@ ( ","? @@ )* )? "]"`
-}
-
-type Map struct {
-	Pos lexer.Position
-
-	Entries []*MapEntry `"{" ( @@ ( ( "," )? @@ )* )? "}"`
-}
-
-type MapEntry struct {
-	Pos lexer.Position
-
-	Key   *Value `@@`
-	Value *Value `":"? @@`
-}
-
 type Enum struct {
 	Pos lexer.Position
 
@@ -119,67 +88,39 @@ type Field struct {
 	Tag      int       `"=" @Int`
 }
 
-type Scalar int
-
-const (
-	None Scalar = iota
-	Double
-	Float
-	Int32
-	Int64
-	Bool
-	String
-	Bytes
-	Datetime
-)
-
-var scalarToString = map[Scalar]string{
-	None: "None", Double: "Double", Float: "Float", Int32: "Int32", Int64: "Int64",
-	Bool: "Bool", String: "String", Bytes: "Bytes", Datetime: "Datetime",
-}
-
-func (s Scalar) GoString() string { return scalarToString[s] }
-
-var stringToScalar = map[string]Scalar{
-	"double": Double, "float": Float, "int32": Int32, "int64": Int64,
-	"bool": Bool, "string": String, "bytes": Bytes, "datetime": Datetime,
-}
-
-func (s *Scalar) Parse(lex *lexer.PeekingLexer) error {
-	token := lex.Peek()
-	v, ok := stringToScalar[token.Value]
-	if !ok {
-		return participle.NextMatch
-	}
-	lex.Next()
-	*s = v
-	return nil
-}
-
 type DataType struct {
 	Pos lexer.Position
 
-	Scalar    Scalar   `  @@`
-	Map       *MapType `| @@`
-	Reference string   `| @(Ident ( "." Ident )*)`
+	Map    *MapType `@@`
+	Scalar *Scalar  `| @@`
 }
 
 type MapType struct {
 	Pos lexer.Position
 
-	Key   *Type `"map" "<" @@`
-	Value *Type `"," @@ ">"`
+	Key   string `"map" "<" @Ident`
+	Value string `"," @Ident ">"`
+}
+
+type Scalar struct {
+	Pos lexer.Position
+
+	Type string `@Ident`
 }
 
 var p = participle.MustBuild[Document](participle.UseLookahead(2), participle.Elide("Comment"), participle.Unquote())
 
-func Parse(fn string, in io.Reader) (*AST, error) {
+func parse(fn string, in io.Reader) (*AST, error) {
 	d, err := p.Parse(fn, in)
 	if err != nil {
 		return nil, err
 	}
 
-	a, err := toAST(*d)
+	return toAST(*d)
+}
+
+func Parse(fn string, in io.Reader) (*AST, error) {
+	a, err := parse(fn, in)
 	if err != nil {
 		return nil, err
 	}
@@ -187,6 +128,17 @@ func Parse(fn string, in io.Reader) (*AST, error) {
 	// Because the solver does some magic around uniqueness
 	// we need to call it here for a len 1 slice
 	return merge([]*AST{a})
+}
+
+func ParseFile(fn string) (*AST, error) {
+	f, err := os.Open(fn)
+	if err != nil {
+		return nil, err
+	}
+
+	defer f.Close()
+
+	return Parse(fn, f)
 }
 
 func ParseDir(dir string) (*AST, error) {
@@ -209,7 +161,7 @@ func ParseDir(dir string) (*AST, error) {
 
 			defer f.Close()
 
-			a, err := Parse(path, f)
+			a, err := parse(path, f)
 			if err != nil {
 				return err
 			}
