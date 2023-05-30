@@ -1,5 +1,6 @@
 type Location {
     +mint:doc:"Location points to a specific location"
+    +mint:validate:string_not_empty
     string Location = 0;
 
     +custom:validate:valid_lat
