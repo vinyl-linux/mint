@@ -16,11 +16,18 @@ func NewStringScalar(s string) *StringScalar {
 	}
 }
 
-func (s StringScalar) Marshall(w io.Writer) error {
-	w.Write([]byte(s.v))
-	w.Write([]byte("\x00"))
+func (s StringScalar) Marshall(w io.Writer) (err error) {
+	for _, v := range []string{
+		s.v,
+		"\x00",
+	} {
+		_, err = w.Write([]byte(v))
+		if err != nil {
+			break
+		}
+	}
 
-	return nil
+	return
 }
 
 func (s *StringScalar) Unmarshall(r io.Reader) (err error) {

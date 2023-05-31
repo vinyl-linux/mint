@@ -21,7 +21,10 @@ func NewSliceCollection(v []MarshallerUnmarshallerValuer, isFixedLength bool) *S
 
 func (s SliceCollection) Marshall(w io.Writer) (err error) {
 	if !s.fixedLength {
-		binary.Write(w, binary.LittleEndian, s.len)
+		err = binary.Write(w, binary.LittleEndian, s.len)
+		if err != nil {
+			return
+		}
 	}
 
 	for _, i := range s.v {
@@ -36,7 +39,10 @@ func (s SliceCollection) Marshall(w io.Writer) (err error) {
 
 func (s *SliceCollection) Unmarshall(r io.Reader) (err error) {
 	if s.fixedLength {
-		binary.Read(r, binary.LittleEndian, &s.len)
+		err = binary.Read(r, binary.LittleEndian, &s.len)
+		if err != nil {
+			return
+		}
 	}
 
 	for i := uint32(0); i < s.len; i++ {
