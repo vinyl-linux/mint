@@ -5,6 +5,9 @@ go 1.20
 require (
 	github.com/alecthomas/participle/v2 v2.0.0
 	github.com/alecthomas/repr v0.2.0
+	github.com/google/gofuzz v1.2.0
+	github.com/sergi/go-diff v1.3.1
+	golang.org/x/sync v0.1.0
 )
 
 require (
@@ -15,7 +18,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/r3labs/diff/v3 v3.0.1 // indirect
-	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/spf13/afero v1.9.3 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/cobra v1.7.0 // indirect

@@ -17,37 +17,30 @@ func NewStringScalar(s string) *StringScalar {
 }
 
 func (s StringScalar) Marshall(w io.Writer) (err error) {
-	for _, v := range []string{
-		s.v,
-		"\x00",
-	} {
-		_, err = w.Write([]byte(v))
-		if err != nil {
-			break
-		}
+	err = binary.Write(w, binary.LittleEndian, int64(len(s.v)))
+	if err != nil {
+		return
 	}
+
+	_, err = w.Write([]byte(s.v))
 
 	return
 }
 
 func (s *StringScalar) Unmarshall(r io.Reader) (err error) {
-	b := make([]byte, 0)
-	for {
-		in := make([]byte, 1)
-
-		_, err = r.Read(in)
-		if err != nil {
-			return
-		}
-
-		if in[0] == '\x00' {
-			break
-		}
-
-		b = append(b, in...)
+	var len int64
+	err = binary.Read(r, binary.LittleEndian, &len)
+	if err != nil {
+		return
 	}
 
-	s.v = string(b)
+	in := make([]byte, len)
+	_, err = r.Read(in)
+	if err != nil {
+		return
+	}
+
+	s.v = string(in)
 
 	return
 }
@@ -77,6 +70,18 @@ func (s *DatetimeScalar) Unmarshall(r io.Reader) (err error) {
 
 	err = binary.Read(r, binary.LittleEndian, &intermediate)
 	if err != nil {
+		return
+	}
+
+	// This happens when an empty time.Time{} is serialised.
+	//
+	// In this situation, Unmarshall will create a time.Time with the date
+	//   time.Date(1754, time.August, 30, 22, 42, 26, 128654848, time.Local)
+	// Which represents the _actual_ earliest a time.Time can represent (as
+	// opposed to 1st January, Year 0 which a nil time.Time seems to be)
+	if intermediate == -6795364578871345152 {
+		s.v = time.Time{}
+
 		return
 	}
 
