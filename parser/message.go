@@ -87,26 +87,37 @@ func (ae *annotatedEntry) AppendTransformation(v transformation) {
 //  1. The specified type starts with a lower case and exists in our base scalars map; or
 //  2. It starts with an upper case and exists as a Type or Enum in our AST
 func (ae *annotatedEntry) IsValidType(names map[string][]lexer.Position) error {
-	// If a scalar, validate that.
-	if ae.DataType.Scalar != nil {
-		if !scalarOrNames(ae.DataType.Scalar.Type, names) {
-			return incorrectTypeErr{
-				t:   ae.DataType.Scalar.Type,
-				pos: ae.DataType.Pos,
-			}
-		}
+	var (
+		pos = ae.DataType.Pos
 
-		return nil
+		t []string
+	)
+
+	switch {
+	case ae.DataType.Scalar != nil:
+		t = []string{ae.DataType.Scalar.Type}
+
+	case ae.DataType.Slice != nil:
+		t = []string{ae.DataType.Slice.Type}
+
+	case ae.DataType.FixedSizeSlice != nil:
+		t = []string{ae.DataType.FixedSizeSlice.Type}
+
+	case ae.DataType.Map != nil:
+		t = []string{ae.DataType.Map.Key, ae.DataType.Map.Value}
+
+	default:
+		return fmt.Errorf("Unable to determine type at %s", pos.String())
 	}
 
-	// Else, validate the K and V from a map
-	for _, s := range []string{ae.DataType.Map.Key, ae.DataType.Map.Value} {
+	for _, s := range t {
 		if !scalarOrNames(s, names) {
 			return incorrectTypeErr{
 				t:   s,
 				pos: ae.DataType.Pos,
 			}
 		}
+
 	}
 
 	return nil

@@ -1,5 +1,6 @@
 type Location {
     +mint:doc:"Location points to a specific location"
+    +mint:validate:string_not_empty
     string Location = 0;
 
     +custom:validate:valid_lat
@@ -13,4 +14,8 @@ type Location {
     +custom:validate:valid_long
     +mint:doc:"described location"
     float32 Longitude = 2
+
+    +mint:doc:"Tags contain an arbitrary list of tags for"
+    +mint:doc:"labelling this location in some way"
+    []string Tags = 3;
 }

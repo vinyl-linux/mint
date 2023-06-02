@@ -202,11 +202,70 @@ var (
 										Column:   3,
 									},
 									Key:   "string",
-									Value: "int",
+									Value: "int32",
 								},
 							},
 							Name: "MappyMap",
 							Tag:  2,
+						},
+					},
+					{
+						Field: Field{
+							Pos: lexer.Position{
+								Filename: "valid input works",
+								Offset:   279,
+								Line:     14,
+								Column:   3,
+							},
+							DataType: &DataType{
+								Pos: lexer.Position{
+									Filename: "valid input works",
+									Offset:   279,
+									Line:     14,
+									Column:   3,
+								},
+								Slice: &SliceType{
+									Pos: lexer.Position{
+										Filename: "valid input works",
+										Offset:   279,
+										Line:     14,
+										Column:   3,
+									},
+									Type: "string",
+								},
+							},
+							Name: "UnboundString",
+							Tag:  3,
+						},
+					},
+					{
+						Field: Field{
+							Pos: lexer.Position{
+								Filename: "valid input works",
+								Offset:   309,
+								Line:     15,
+								Column:   3,
+							},
+							DataType: &DataType{
+								Pos: lexer.Position{
+									Filename: "valid input works",
+									Offset:   309,
+									Line:     15,
+									Column:   3,
+								},
+								FixedSizeSlice: &FixedSizedSliceType{
+									Pos: lexer.Position{
+										Filename: "valid input works",
+										Offset:   309,
+										Line:     15,
+										Column:   3,
+									},
+									Size: 5,
+									Type: "byte",
+								},
+							},
+							Name: "FixedSizeByteSlice",
+							Tag:  4,
 						},
 					},
 				},
@@ -216,8 +275,8 @@ var (
 			{
 				Pos: lexer.Position{
 					Filename: "valid input works",
-					Offset:   278,
-					Line:     16,
+					Offset:   344,
+					Line:     18,
 					Column:   1,
 				},
 				Name: "Bar",
@@ -225,15 +284,15 @@ var (
 					{
 						Pos: lexer.Position{
 							Filename: "valid input works",
-							Offset:   291,
-							Line:     17,
+							Offset:   357,
+							Line:     19,
 							Column:   3,
 						},
 						Value: &EnumValue{
 							Pos: lexer.Position{
 								Filename: "valid input works",
-								Offset:   291,
-								Line:     17,
+								Offset:   357,
+								Line:     19,
 								Column:   3,
 							},
 							Key:   "A",
@@ -243,15 +302,15 @@ var (
 					{
 						Pos: lexer.Position{
 							Filename: "valid input works",
-							Offset:   300,
-							Line:     18,
+							Offset:   366,
+							Line:     20,
 							Column:   3,
 						},
 						Value: &EnumValue{
 							Pos: lexer.Position{
 								Filename: "valid input works",
-								Offset:   300,
-								Line:     18,
+								Offset:   366,
+								Line:     20,
 								Column:   3,
 							},
 							Key:   "B",
@@ -261,15 +320,15 @@ var (
 					{
 						Pos: lexer.Position{
 							Filename: "valid input works",
-							Offset:   309,
-							Line:     19,
+							Offset:   375,
+							Line:     21,
 							Column:   3,
 						},
 						Value: &EnumValue{
 							Pos: lexer.Position{
 								Filename: "valid input works",
-								Offset:   309,
-								Line:     19,
+								Offset:   375,
+								Line:     21,
 								Column:   3,
 							},
 							Key:   "C",
@@ -316,7 +375,9 @@ type Foo {
   +mint:doc:"Some bar value"
   Bar Bar = 1;
 
-  map<string, int> MappyMap = 2;
+  map<string, int32> MappyMap = 2;
+  []string UnboundString = 3;
+  [5]byte FixedSizeByteSlice = 4;
 }
 
 enum Bar {

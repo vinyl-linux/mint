@@ -7,7 +7,6 @@ type WeatherForecast {
 
     +mint:doc:"Location contains a reference to the specified"
     +mint:doc:"location of this forecast"
-    +mint:validate:string_not_empty
     Location Location = 1;
 
     +mint:doc:"Temperature is a float pointing to the forecast"

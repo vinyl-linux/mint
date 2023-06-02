@@ -92,8 +92,10 @@ type Field struct {
 type DataType struct {
 	Pos lexer.Position
 
-	Map    *MapType `@@`
-	Scalar *Scalar  `| @@`
+	FixedSizeSlice *FixedSizedSliceType `@@`
+	Slice          *SliceType           `| @@`
+	Map            *MapType             `| @@`
+	Scalar         *Scalar              `| @@`
 }
 
 type MapType struct {
@@ -101,6 +103,19 @@ type MapType struct {
 
 	Key   string `"map" "<" @Ident`
 	Value string `"," @Ident ">"`
+}
+
+type SliceType struct {
+	Pos lexer.Position
+
+	Type string `"[" "]" @Ident`
+}
+
+type FixedSizedSliceType struct {
+	Pos lexer.Position
+
+	Size int    `"[" @Int "]"`
+	Type string `@Ident`
 }
 
 type Scalar struct {
