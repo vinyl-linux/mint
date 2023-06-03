@@ -23,6 +23,7 @@ Mint supports the following fixed length types. These types are read from a stre
 | Name     | Description                                                                                              | Size (bytes) | Encoding      |
 |----------|----------------------------------------------------------------------------------------------------------|--------------|---------------|
 | datetime | int64 of nanoseconds since the [epoch](https://en.wikipedia.org/wiki/Unix_time) without TZ               | 8 Bytes      | Little Endian |
+| uuid     | fixed length array of 16 bytes containing the components of a uuid                                       | 16 Bytes     | Little Endian |
 | int16    | 16 bit integer, useful where numbers are known to be low                                                 | 2 Bytes      | Little Endian |
 | int32    | 32 bit integer                                                                                           | 4 Bytes      | Little Endian |
 | uint32   | Unsigned 32 bit integer; useful for larger positive numbers where keeping binary size down is important  | 4 Bytes      | Little Endian |

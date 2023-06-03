@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 func TestStringScalar(t *testing.T) {
@@ -21,7 +23,7 @@ func TestStringScalar(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			v := NewStringScalar(test.s)
 			if v == nil {
-				t.Fatalf("expected instance of StringScala, received null")
+				t.Fatalf("expected instance of StringScalar, received null")
 			}
 
 			b := new(bytes.Buffer)
@@ -112,6 +114,61 @@ func TestDatetimeScalar(t *testing.T) {
 				received := v.Value().(time.Time)
 				if !test.d.Equal(received) {
 					t.Errorf("expected %#v, received %#v", test.d, received)
+				}
+			})
+		})
+	}
+}
+
+func TestUuidScalar(t *testing.T) {
+	for _, test := range []struct {
+		name           string
+		s              uuid.UUID
+		expectWriteErr bool
+		expectReadErr  bool
+	}{
+		{"Empty uuid should return empty uuid", uuid.UUID{}, false, false},
+		{"Arbitrary uuid should return same uuid", uuid.Must(uuid.NewV4()), false, false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			v := NewUuidScalar(test.s)
+			if v == nil {
+				t.Fatalf("expected instance of UuidScalar, received null")
+			}
+
+			b := new(bytes.Buffer)
+			t.Run("Marshall", func(t *testing.T) {
+				err := v.Marshall(b)
+				if err == nil && test.expectWriteErr {
+					t.Errorf("expected error, received none")
+				} else if err != nil && !test.expectWriteErr {
+					t.Errorf("unexpected error %#v", err)
+				}
+
+				if b.Len() == 0 {
+					t.Errorf("no bytes were written")
+				}
+			})
+
+			t.Run("Unmarshall", func(t *testing.T) {
+				v = NewUuidScalar(uuid.UUID{})
+
+				err := v.Unmarshall(b)
+				if err == nil && test.expectReadErr {
+					t.Errorf("expected error, received none")
+				} else if err != nil && !test.expectReadErr {
+					t.Errorf("unexpected error %#v", err)
+				}
+
+				if b.Len() > 0 {
+					t.Errorf("bytes left over: %#v", b.Bytes())
+				}
+			})
+
+			t.Run("Value", func(t *testing.T) {
+				received := v.Value().(uuid.UUID)
+				if test.s.String() != received.String() {
+					t.Errorf("expected %#v, received %#v", test.s.String(), received.String())
 				}
 			})
 		})

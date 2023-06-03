@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"io"
 	"time"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type StringScalar struct {
@@ -91,6 +93,53 @@ func (s *DatetimeScalar) Unmarshall(r io.Reader) (err error) {
 }
 
 func (s DatetimeScalar) Value() any {
+	return s.v
+}
+
+type UuidScalar struct {
+	v uuid.UUID
+}
+
+func NewUuidScalar(u uuid.UUID) *UuidScalar {
+	return &UuidScalar{
+		v: u,
+	}
+}
+
+func (s UuidScalar) Marshall(w io.Writer) error {
+	scv := make([]MarshallerUnmarshallerValuer, uuid.Size)
+	b := s.v.Bytes()
+
+	for idx := range b {
+		scv[idx] = NewByteScalar(b[idx])
+	}
+
+	return NewSliceCollection(scv, true).Marshall(w)
+}
+
+func (s *UuidScalar) Unmarshall(r io.Reader) (err error) {
+	scv := make([]MarshallerUnmarshallerValuer, uuid.Size)
+	for idx := range scv {
+		scv[idx] = NewByteScalar('\x00')
+	}
+
+	err = NewSliceCollection(scv, true).Unmarshall(r)
+	if err != nil {
+		return
+	}
+
+	b := make([]byte, uuid.Size)
+
+	for idx := range scv {
+		b[idx] = scv[idx].Value().(byte)
+	}
+
+	s.v, err = uuid.FromBytes(b)
+
+	return
+}
+
+func (s UuidScalar) Value() any {
 	return s.v
 }
 
