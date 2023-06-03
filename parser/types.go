@@ -2,15 +2,16 @@ package parser
 
 var (
 	scalars = map[string]bool{
-		"string":   false,
-		"datetime": false,
+		"string":   true,
+		"datetime": true,
+		"uuid":     true,
 
-		"int16":   false,
-		"int32":   false,
-		"int64":   false,
-		"float32": false,
-		"float64": false,
-		"byte":    false,
-		"bool":    false,
+		"int16":   true,
+		"int32":   true,
+		"int64":   true,
+		"float32": true,
+		"float64": true,
+		"byte":    true,
+		"bool":    true,
 	}
 )
