@@ -18,4 +18,12 @@ type WeatherForecast {
     +mint:doc:"oktas"
     +custom:validate:valid_okta
     int32 CloudCoverage = 2;
+
+    +mint:doc:"Date this forecast is for"
+    +mint:transform:date_in_utc
+    datetime ForecastedFor = 4;
+
+    +mint:doc:"WeatherKeys is a tuple that holds some arbitrary data that means..."
+    +mint:doc:"something"
+    [5]int16 WeatherKeys = 5;
 }
