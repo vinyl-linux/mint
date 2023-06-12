@@ -13,7 +13,7 @@ func DateInPast(name string, t time.Time) error {
 	return nil
 }
 
-func DateInUTC(t time.Time) (time.Time, error) {
+func DateInUtc(t time.Time) (time.Time, error) {
 	return t.UTC(), nil
 }
 
