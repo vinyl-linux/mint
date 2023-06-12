@@ -77,28 +77,28 @@ func merge(in []*AST) (out *AST, err error) {
 //
 // Groupings occur by parsing each entry until we hit a field definition, and then
 // merging those entries into a single definition.
-func toAnnotatedType(m Type) (a annotatedType, err error) {
+func toAnnotatedType(m Type) (a AnnotatedType, err error) {
 	a.Pos = m.Pos
 	a.Name = m.Name
-	a.Entries = make([]annotatedEntry, 0)
+	a.Entries = make([]AnnotatedEntry, 0)
 
 	names := make(map[string][]lexer.Position)
 	tags := make(map[string][]lexer.Position)
 	tagValues := make([]int, 0)
 
-	ae := annotatedEntry{}
+	ae := AnnotatedEntry{}
 	for _, e := range m.Entries {
 		if e.Annotation != nil {
 			switch e.Annotation.Type {
 			case "doc":
 				ae.AppendDocString(e.Annotation.Value)
 			case "validate":
-				ae.AppendValidation(validation{
+				ae.AppendValidation(Validation{
 					IsCustom: e.Annotation.Provider == "custom",
 					Function: e.Annotation.Func,
 				})
 			case "transform":
-				ae.AppendTransformation(transformation{
+				ae.AppendTransformation(Transformation{
 					IsCustom: e.Annotation.Provider == "custom",
 					Function: e.Annotation.Func,
 				})
@@ -126,7 +126,7 @@ func toAnnotatedType(m Type) (a annotatedType, err error) {
 
 		ae.Field = *e.Field
 		a.Entries = append(a.Entries, ae)
-		ae = annotatedEntry{}
+		ae = AnnotatedEntry{}
 	}
 
 	// Ensure names are unique

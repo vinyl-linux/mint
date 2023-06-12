@@ -7,7 +7,7 @@ import (
 )
 
 func TestAnnotatedEntry_IsValidType(t *testing.T) {
-	ae := &annotatedEntry{
+	ae := &AnnotatedEntry{
 		Field: Field{
 			DataType: &DataType{},
 		},

@@ -8,14 +8,14 @@ import (
 )
 
 type AST struct {
-	Types []annotatedType
+	Types []AnnotatedType
 	Enums []Enum
 }
 
 func toAST(d Document) (ad *AST, err error) {
 	ad = new(AST)
 	ad.Enums = make([]Enum, 0)
-	ad.Types = make([]annotatedType, 0)
+	ad.Types = make([]AnnotatedType, 0)
 
 	for _, e := range d.Entries {
 		if e.Enum != nil {
@@ -35,29 +35,29 @@ func toAST(d Document) (ad *AST, err error) {
 	return
 }
 
-type annotatedType struct {
+type AnnotatedType struct {
 	Pos     lexer.Position
 	Name    string
-	Entries []annotatedEntry
+	Entries []AnnotatedEntry
 }
 
-func (at annotatedType) name() string {
+func (at AnnotatedType) name() string {
 	return at.Name
 }
 
-func (at annotatedType) pos() lexer.Position {
+func (at AnnotatedType) pos() lexer.Position {
 	return at.Pos
 }
 
-type annotatedEntry struct {
+type AnnotatedEntry struct {
 	Field
 
 	DocString       string
-	Validations     []validation
-	Transformations []transformation
+	Validations     []Validation
+	Transformations []Transformation
 }
 
-func (ae *annotatedEntry) AppendDocString(s string) {
+func (ae *AnnotatedEntry) AppendDocString(s string) {
 	if len(ae.DocString) == 0 {
 		ae.DocString = s
 
@@ -66,17 +66,17 @@ func (ae *annotatedEntry) AppendDocString(s string) {
 	ae.DocString = ae.DocString + " " + s
 }
 
-func (ae *annotatedEntry) AppendValidation(v validation) {
+func (ae *AnnotatedEntry) AppendValidation(v Validation) {
 	if ae.Validations == nil {
-		ae.Validations = make([]validation, 0)
+		ae.Validations = make([]Validation, 0)
 	}
 
 	ae.Validations = append(ae.Validations, v)
 }
 
-func (ae *annotatedEntry) AppendTransformation(v transformation) {
+func (ae *AnnotatedEntry) AppendTransformation(v Transformation) {
 	if ae.Transformations == nil {
-		ae.Transformations = make([]transformation, 0)
+		ae.Transformations = make([]Transformation, 0)
 	}
 
 	ae.Transformations = append(ae.Transformations, v)
@@ -86,7 +86,7 @@ func (ae *annotatedEntry) AppendTransformation(v transformation) {
 //
 //  1. The specified type starts with a lower case and exists in our base scalars map; or
 //  2. It starts with an upper case and exists as a Type or Enum in our AST
-func (ae *annotatedEntry) IsValidType(names map[string][]lexer.Position) error {
+func (ae *AnnotatedEntry) IsValidType(names map[string][]lexer.Position) error {
 	var (
 		pos = ae.DataType.Pos
 
@@ -123,12 +123,12 @@ func (ae *annotatedEntry) IsValidType(names map[string][]lexer.Position) error {
 	return nil
 }
 
-type validation struct {
+type Validation struct {
 	IsCustom bool
 	Function string
 }
 
-type transformation struct {
+type Transformation struct {
 	IsCustom bool
 	Function string
 }
@@ -144,7 +144,7 @@ func (e incorrectTypeErr) Error() string {
 
 func scalarOrNames(s string, names map[string][]lexer.Position) bool {
 	if unicode.IsLower(rune(s[0])) {
-		_, ok := scalars[s]
+		_, ok := Scalars[s]
 		return ok
 	}
 

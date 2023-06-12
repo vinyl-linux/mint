@@ -1,7 +1,7 @@
 package parser
 
 var (
-	scalars = map[string]bool{
+	Scalars = map[string]bool{
 		"string":   true,
 		"datetime": true,
 		"uuid":     true,

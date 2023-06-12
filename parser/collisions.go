@@ -58,7 +58,7 @@ func (c collisionsErr) Error() string {
 
 // namedSlice coerces a slice of types and enums into a slice of
 // named types to aid the ast solver
-func namedSlice(t []annotatedType, e []Enum) (out []named) {
+func namedSlice(t []AnnotatedType, e []Enum) (out []named) {
 	out = make([]named, len(t)+len(e))
 	idx := 0
 

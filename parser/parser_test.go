@@ -95,8 +95,8 @@ func TestParseDir(t *testing.T) {
 var (
 	emptyAST = new(AST)
 	fullAST  = &AST{
-		Types: []annotatedType{
-			annotatedType{
+		Types: []AnnotatedType{
+			AnnotatedType{
 				Pos: lexer.Position{
 					Filename: "valid input works",
 					Offset:   1,
@@ -104,8 +104,8 @@ var (
 					Column:   1,
 				},
 				Name: "Foo",
-				Entries: []annotatedEntry{
-					annotatedEntry{
+				Entries: []AnnotatedEntry{
+					AnnotatedEntry{
 						Field: Field{
 							Pos: lexer.Position{
 								Filename: "valid input works",
@@ -134,12 +134,12 @@ var (
 							Tag:  0,
 						},
 						DocString: "Hello, world! This is a multiline doc string :)",
-						Validations: []validation{
+						Validations: []Validation{
 							{
 								Function: "not_empty",
 							},
 						},
-						Transformations: []transformation{
+						Transformations: []Transformation{
 							{
 								Function: "to_lowercase",
 							},
