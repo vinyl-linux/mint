@@ -31,7 +31,7 @@ func TestDateInUTC(t *testing.T) {
 		t.Fatalf("expected Local, received %s", s)
 	}
 
-	out, err := DateInUTC(in)
+	out, err := DateInUtc(in)
 	if err != nil {
 		t.Errorf("unexpected error %s", err)
 	}
