@@ -18,4 +18,12 @@ type Location {
     +mint:doc:"Tags contain an arbitrary list of tags for"
     +mint:doc:"labelling this location in some way"
     []string Tags = 3;
+
+    +mint:doc:"Labels contains a map key/values representing"
+    +mint:doc:"this location in some way"
+    map<string,string> Labels = 4;
+
+    +mint:doc:"ID is a UUID representing this location and is"
+    +mint:doc:"ever unchanging (whereas the Location name may)"
+    uuid ID = 5;
 }
