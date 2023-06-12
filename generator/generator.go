@@ -59,46 +59,7 @@ func (g *Generator) Generate() (err error) {
 	}
 
 	for _, t := range g.ast.Types {
-		g.customFunctions = make([]jen.Code, 0)
-
-		ret := jen.NewFile(g.PackageName)
-
-		ret.Add(g.generateType(t))
-		ret.Add(g.generateValidations(t))
-		ret.Add(g.generateTransformations(t))
-		ret.Add(g.generateValuer(t))
-
-		// We need to manually run these loops, rather than exploding
-		// the output of generateUnmarshaller (etc.) as per:
-		//
-		//  ret.Add(g.generateUnmarshaller(t)...)
-		//
-		// because doing so creates invalid code for whatever
-		// reason
-		for _, u := range g.generateUnmarshaller(t) {
-			ret.Add(u)
-		}
-
-		for _, u := range g.generateMarshaller(t) {
-			ret.Add(u)
-		}
-
-		if g.CustomFunctionSkeletons {
-			fn := filepath.Join(g.Directory, strings.Join([]string{strings.ToLower(t.Name), "custom", "go"}, "."))
-			customs := jen.NewFile(g.PackageName)
-			for _, f := range g.customFunctions {
-				customs.Add(f)
-			}
-
-			if _, statErr := os.Stat(fn); statErr != nil || g.Clobber {
-				err = customs.Save(fn)
-				if err != nil {
-					return
-				}
-			}
-		}
-
-		err = ret.Save(filepath.Join(g.Directory, strings.Join([]string{strings.ToLower(t.Name), "go"}, ".")))
+		err = g.generateForType(t)
 		if err != nil {
 			return
 		}
@@ -107,9 +68,63 @@ func (g *Generator) Generate() (err error) {
 	return
 }
 
-// generateType creates the top level struct from names, types, and
+func (g *Generator) generateForType(t parser.AnnotatedType) (err error) {
+	g.customFunctions = make([]jen.Code, 0)
+
+	ret := jen.NewFile(g.PackageName)
+
+	ret.Add(g.generateTypeDefinition(t))
+	ret.Add(g.generateValidations(t))
+	ret.Add(g.generateTransformations(t))
+	ret.Add(g.generateValuer(t))
+
+	// We need to manually run these loops, rather than exploding
+	// the output of generateUnmarshaller (etc.) as per:
+	//
+	//  ret.Add(g.generateUnmarshaller(t)...)
+	//
+	// because doing so creates invalid code for whatever
+	// reason
+	for _, u := range g.generateUnmarshaller(t) {
+		ret.Add(u)
+	}
+
+	for _, u := range g.generateMarshaller(t) {
+		ret.Add(u)
+	}
+
+	err = g.writeSkeletons(t.Name)
+	if err != nil {
+		return
+	}
+
+	return ret.Save(filepath.Join(g.Directory, strings.Join([]string{strings.ToLower(t.Name), "go"}, ".")))
+}
+
+func (g Generator) writeSkeletons(tn string) (err error) {
+	if !g.CustomFunctionSkeletons {
+		return
+	}
+
+	fn := filepath.Join(g.Directory, strings.Join([]string{strings.ToLower(tn), "custom", "go"}, "."))
+	customs := jen.NewFile(g.PackageName)
+	for _, f := range g.customFunctions {
+		customs.Add(f)
+	}
+
+	if _, statErr := os.Stat(fn); statErr != nil || g.Clobber {
+		err = customs.Save(fn)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+// generateTypeDefinition creates the top level struct from names, types, and
 // doc strings
-func (g *Generator) generateType(at parser.AnnotatedType) (c jen.Code) {
+func (g *Generator) generateTypeDefinition(at parser.AnnotatedType) (c jen.Code) {
 	fields := make([]jen.Code, 0)
 	for _, f := range at.Entries {
 		if len(f.DocString) > 0 {

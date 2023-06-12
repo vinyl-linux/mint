@@ -80,7 +80,7 @@ func TestGenerator_generateType(t *testing.T) {
 	ATypeOfSomeType v5.UUID
 	Thingy          BlahType
 }`
-	received := codeToString(g.generateType(simpleType))
+	received := codeToString(g.generateTypeDefinition(simpleType))
 
 	if expect != received {
 		t.Errorf("expected\n%s\nreceived\n%s", expect, received)
