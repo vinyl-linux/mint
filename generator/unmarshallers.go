@@ -34,7 +34,7 @@ func (g Generator) unmarshallSliceArray(t string, e parser.AnnotatedEntry) jen.C
 
 	innerInitialiser, innerNilValue, innerCastType := scalarToMintJen(dt)
 
-	for _, stmt := range []jen.Code{
+	block = append(block, []jen.Code{
 		jen.For(jen.List(jen.Id("i"), jen.Null()).Op(":=").Range().Id("f").Dot("V")).Block(
 			jen.Id("f").Dot("V").Index(jen.Id("i")).Op("=").Add(innerInitialiser).Call(innerNilValue),
 		),
@@ -48,9 +48,7 @@ func (g Generator) unmarshallSliceArray(t string, e parser.AnnotatedEntry) jen.C
 			jen.Id("sf").Dot(e.Field.Name).Index(jen.Id("i")).Op("=").Id("v").Dot("Value").Call().Assert(innerCastType),
 		),
 		jen.Return(),
-	} {
-		block = append(block, stmt)
-	}
+	}...)
 
 	return jen.Func().Params(jen.Id("sf").Op("*").Id(t)).Id(fn).Params(jen.Id("r").Qual("io", "Reader")).Params(jen.Id("err").Id("error")).
 		Block(
