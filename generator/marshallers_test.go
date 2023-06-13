@@ -28,6 +28,13 @@ func TestGenerator_marshallSliceArray(t *testing.T) {
 }`},
 		{"Bad input does nothing", parser.AnnotatedEntry{}, ""},
 		{"Non-slice returns nothing", parser.AnnotatedEntry{Field: parser.Field{DataType: &parser.DataType{}}}, ""},
+		{"Complex types are not passed to an initialiser", userDefinedSliceEntry, `func (sf TestType) marshallThingy(w io.Writer) (err error) {
+	f := make([]mint.MarshallerUnmarshallerValuer, len(sf.Thingy))
+	for i := range f {
+		f[i] = &(sf.Thingy[i])
+	}
+	return mint.NewSliceCollection(f, false).Marshall(w)
+}`},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			g := new(Generator)
@@ -41,19 +48,48 @@ func TestGenerator_marshallSliceArray(t *testing.T) {
 }
 
 func TestGenerator_marshallMap(t *testing.T) {
-	g := new(Generator)
 
-	expect := `func (sf TestType) marshallSomeStringSlice(w io.Writer) (err error) {
+	for _, test := range []struct {
+		name   string
+		ae     parser.AnnotatedEntry
+		expect string
+	}{
+		{"map of builtin to builtin", mapEntry, `func (sf TestType) marshallSomeStringSlice(w io.Writer) (err error) {
 	f := make(map[mint.MarshallerUnmarshallerValuer]mint.MarshallerUnmarshallerValuer)
 	for k, v := range sf.SomeStringSlice {
 		f[mint.NewStringScalar(k)] = mint.NewInt64Scalar(v)
 	}
 	return mint.NewMapCollection(f).Marshall(w)
-}`
-	received := codeToString(g.marshallMap("TestType", mapEntry))
-
-	if expect != received {
-		t.Errorf("expected\n%s\nreceived\n%s", expect, received)
+}`},
+		{"map of builtin to complex", builtinToComplexMap, `func (sf TestType) marshallThingy(w io.Writer) (err error) {
+	f := make(map[mint.MarshallerUnmarshallerValuer]mint.MarshallerUnmarshallerValuer)
+	for k, v := range sf.Thingy {
+		f[mint.NewStringScalar(k)] = &(v)
 	}
+	return mint.NewMapCollection(f).Marshall(w)
+}`},
+		{"map of complex to builtin", complexToBuiltinMap, `func (sf TestType) marshallThingy(w io.Writer) (err error) {
+	f := make(map[mint.MarshallerUnmarshallerValuer]mint.MarshallerUnmarshallerValuer)
+	for k, v := range sf.Thingy {
+		f[&(k)] = mint.NewBoolScalar(v)
+	}
+	return mint.NewMapCollection(f).Marshall(w)
+}`},
+		{"map of complex to complex", complexToComplexMap, `func (sf TestType) marshallThingy(w io.Writer) (err error) {
+	f := make(map[mint.MarshallerUnmarshallerValuer]mint.MarshallerUnmarshallerValuer)
+	for k, v := range sf.Thingy {
+		f[&(k)] = &(v)
+	}
+	return mint.NewMapCollection(f).Marshall(w)
+}`},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			g := new(Generator)
+			received := codeToString(g.marshallMap("TestType", test.ae))
 
+			if test.expect != received {
+				t.Errorf("expected\n%s\nreceived\n%s", test.expect, received)
+			}
+		})
+	}
 }

@@ -91,6 +91,53 @@ var (
 		},
 	}
 
+	userDefinedSliceEntry = parser.AnnotatedEntry{
+		Field: parser.Field{
+			Name: "Thingy",
+			DataType: &parser.DataType{
+				Slice: &parser.SliceType{
+					Type: "BlahType",
+				},
+			},
+		},
+	}
+
+	builtinToComplexMap = parser.AnnotatedEntry{
+		Field: parser.Field{
+			Name: "Thingy",
+			DataType: &parser.DataType{
+				Map: &parser.MapType{
+					Key:   "string",
+					Value: "BlahType",
+				},
+			},
+		},
+	}
+
+	complexToBuiltinMap = parser.AnnotatedEntry{
+		Field: parser.Field{
+			Name: "Thingy",
+			DataType: &parser.DataType{
+				Map: &parser.MapType{
+					Key:   "BlahType",
+					Value: "bool",
+				},
+			},
+		},
+	}
+
+	complexToComplexMap = parser.AnnotatedEntry{
+		Field: parser.Field{
+			Name: "Thingy",
+			DataType: &parser.DataType{
+				Map: &parser.MapType{
+					Key:   "BlahType",
+					Value: "BlahType",
+				},
+			},
+		},
+	}
+
 	simpleType = parser.AnnotatedType{
 		Name: "SomeTestType",
 		Entries: []parser.AnnotatedEntry{

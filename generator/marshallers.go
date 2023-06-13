@@ -26,7 +26,7 @@ func (g Generator) marshallSliceArray(t string, e parser.AnnotatedEntry) jen.Cod
 	}
 
 	fn := marshallerFuncName(e.Name)
-	innerInitialiser, _, _ := scalarToMintJen(dt)
+	innerInitialiser := marshallerInitialiser(dt)
 
 	return jen.Func().Params(jen.Id("sf").Id(t)).Id(fn).Params(jen.Id("w").Qual("io", "Writer")).Params(jen.Id("err").Id("error")).
 		Block(
@@ -42,8 +42,8 @@ func (g Generator) marshallSliceArray(t string, e parser.AnnotatedEntry) jen.Cod
 func (g Generator) marshallMap(t string, e parser.AnnotatedEntry) jen.Code {
 	fn := marshallerFuncName(e.Name)
 
-	keyInitialiser, _, _ := scalarToMintJen(e.DataType.Map.Key)
-	valueInitialiser, _, _ := scalarToMintJen(e.DataType.Map.Value)
+	keyInitialiser := marshallerInitialiser(e.DataType.Map.Key)
+	valueInitialiser := marshallerInitialiser(e.DataType.Map.Value)
 
 	return jen.Func().Params(jen.Id("sf").Id(t)).Id(fn).Params(jen.Id("w").Qual("io", "Writer")).Params(jen.Id("err").Id("error")).
 		Block(
@@ -54,4 +54,14 @@ func (g Generator) marshallMap(t string, e parser.AnnotatedEntry) jen.Code {
 			jen.Return(jen.Qual(mintPath, "NewMapCollection").Call(jen.Id("f")).Dot("Marshall").Call(jen.Id("w"))),
 		)
 
+}
+
+func marshallerInitialiser(dt string) jen.Code {
+	if _, ok := parser.Scalars[dt]; ok {
+		i, _, _ := scalarToMintJen(dt)
+
+		return i
+	}
+
+	return jen.Op("&")
 }
