@@ -28,6 +28,9 @@ jobs:
         go test -covermode=count -coverprofile=coverage.out -v ./...
         (cd benchmarks && go test -bench=.)
 
+        # Remove benchmarker; an auto-generated file used in benchmarks
+        sed -i '/benchmarker.go/d' coverage.out
+
     - name: Convert coverage to lcov
       uses: jandelgado/gcov2lcov-action@v1.0.9
 
