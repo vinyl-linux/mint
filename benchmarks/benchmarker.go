@@ -59,7 +59,10 @@ func (sf *Benchmarker) unmarshallLongString(r io.Reader) (err error) {
 }
 func (sf *Benchmarker) unmarshallManyShortStrings(r io.Reader) (err error) {
 	f := mint.NewSliceCollection(nil, false)
-	f.ReadSize(r)
+	err = f.ReadSize(r)
+	if err != nil {
+		return
+	}
 	f.V = make([]mint.MarshallerUnmarshallerValuer, f.Len())
 	for i := range f.V {
 		f.V[i] = mint.NewStringScalar("")
@@ -76,7 +79,10 @@ func (sf *Benchmarker) unmarshallManyShortStrings(r io.Reader) (err error) {
 }
 func (sf *Benchmarker) unmarshallManyLongStrings(r io.Reader) (err error) {
 	f := mint.NewSliceCollection(nil, false)
-	f.ReadSize(r)
+	err = f.ReadSize(r)
+	if err != nil {
+		return
+	}
 	f.V = make([]mint.MarshallerUnmarshallerValuer, f.Len())
 	for i := range f.V {
 		f.V[i] = mint.NewStringScalar("")
