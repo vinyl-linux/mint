@@ -26,6 +26,7 @@ jobs:
     - name: Test
       run: |
         go test -covermode=count -coverprofile=coverage.out -v ./...
+        (cd benchmarks && go test -bench=.)
 
     - name: Convert coverage to lcov
       uses: jandelgado/gcov2lcov-action@v1.0.9
