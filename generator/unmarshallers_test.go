@@ -9,7 +9,10 @@ import (
 var (
 	nonFixedLengthUnmarshaller = `func (sf *TestType) unmarshallSomeStringSlice(r io.Reader) (err error) {
 	f := mint.NewSliceCollection(nil, false)
-	f.ReadSize(r)
+	err = f.ReadSize(r)
+	if err != nil {
+		return
+	}
 	f.V = make([]mint.MarshallerUnmarshallerValuer, f.Len())
 	for i := range f.V {
 		f.V[i] = mint.NewStringScalar("")
@@ -70,7 +73,10 @@ func TestGenerator_unmarshallMap(t *testing.T) {
 
 	expect := `func (sf *TestType) unmarshallSomeStringSlice(r io.Reader) (err error) {
 	f := mint.NewMapCollection(map[mint.MarshallerUnmarshallerValuer]mint.MarshallerUnmarshallerValuer{})
-	f.ReadSize(r)
+	err = f.ReadSize(r)
+	if err != nil {
+		return
+	}
 	for i := 0; i < f.Len(); i++ {
 		f.V[mint.NewStringScalar("")] = mint.NewInt64Scalar(int64(0))
 	}
