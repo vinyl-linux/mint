@@ -69,7 +69,10 @@ func (g Generator) unmarshallMap(t string, e parser.AnnotatedEntry) jen.Code {
 			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
 				jen.Return(),
 			),
-
+			jen.If(jen.Id("f").Dot("Len").Call().Op("==").Lit(0)).Block(
+				jen.Id("sf").Dot(e.Name).Op("=").Id("nil"),
+				jen.Return(),
+			),
 			jen.For(jen.Id("i").Op(":=").Lit(0), jen.Id("i").Op("<").Id("f").Dot("Len").Call(), jen.Id("i").Op("++")).Block(
 				jen.Id("f").Dot("V").Index(jen.Add(keyInitialiser).Call(keyNilValue)).Op("=").Add(valueInitialiser).Call(valueNilValue),
 			),
@@ -110,6 +113,10 @@ func unmarshallSlicePreludeGetLen(e parser.AnnotatedEntry) []jen.Code {
 		jen.Id("f").Op(":=").Id("mint").Dot("NewSliceCollection").Call(jen.Id("nil"), jen.Id("false")),
 		jen.Id("err").Op("=").Id("f").Dot("ReadSize").Call(jen.Id("r")),
 		jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
+			jen.Return(),
+		),
+		jen.If(jen.Id("f").Dot("Len").Call().Op("==").Lit(0)).Block(
+			jen.Id("sf").Dot(e.Name).Op("=").Id("nil"),
 			jen.Return(),
 		),
 		jen.Id("f").Dot("V").Op("=").Id("make").Call(jen.Index().Qual(mintPath, "MarshallerUnmarshallerValuer"), jen.Id("f").Dot("Len").Call()),
