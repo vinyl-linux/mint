@@ -163,6 +163,10 @@ func (sf *SomeTestType) unmarshallSomeStringSlice(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
+	if f.Len() == 0 {
+		sf.SomeStringSlice = nil
+		return
+	}
 	f.V = make([]mint.MarshallerUnmarshallerValuer, f.Len())
 	for i := range f.V {
 		f.V[i] = mint.NewStringScalar("")
@@ -196,6 +200,10 @@ func (sf *SomeTestType) unmarshallSomeStringSlice(r io.Reader) (err error) {
 	f := mint.NewMapCollection(map[mint.MarshallerUnmarshallerValuer]mint.MarshallerUnmarshallerValuer{})
 	err = f.ReadSize(r)
 	if err != nil {
+		return
+	}
+	if f.Len() == 0 {
+		sf.SomeStringSlice = nil
 		return
 	}
 	for i := 0; i < f.Len(); i++ {

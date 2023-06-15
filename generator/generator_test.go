@@ -57,7 +57,7 @@ func TestGenerator_Generate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expect := "h1:fax3XoUdX25uZP33jy/p8dN8fz9KyBkodgokFpmho14="
+	expect := "h1:4zaocS5qbH8uRHYYKVq6ohH4QevkDfTBqm6PhUgTbrI="
 	received, err := dirhash.HashDir(dir, "", dirhash.DefaultHash)
 	if err != nil {
 		t.Fatal(err)
@@ -65,6 +65,54 @@ func TestGenerator_Generate(t *testing.T) {
 
 	if expect != received {
 		t.Fatalf("expected %q, received %q", expect, received)
+	}
+}
+
+func TestGenerator_Generate_FailureCases(t *testing.T) {
+	for _, test := range []struct {
+		name  string
+		dir   string
+		mkdir bool
+	}{
+		{"No permissions to create directory", "/mint-test-run", false},
+		{"Destination exists, but is a file, mkdir false", "testdata/some-file-treated-as-a-directory", false},
+		{"Destination exists, but is a file, mkdir true", "testdata/some-file-treated-as-a-directory", true},
+		{"Destination does not exist", "/tmp/some/destination/directory/that/does/not/exist", false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			ast, err := parser.ParseDir("testdata/valid-documents")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			opts := &GeneratorOptions{
+				PackageName:   "mint_testrun",
+				MakeDirectory: test.mkdir,
+				Directory:     test.dir,
+				Clobber:       true,
+			}
+
+			g, _ := New(ast, opts)
+
+			t.Run("generate skeletons on", func(t *testing.T) {
+				g.CustomFunctionSkeletons = true
+
+				err = g.Generate()
+				if err == nil {
+					t.Errorf("expected error, received none")
+				}
+			})
+
+			t.Run("generate skeletons off", func(t *testing.T) {
+				g.CustomFunctionSkeletons = false
+
+				err = g.Generate()
+				if err == nil {
+					t.Errorf("expected error, received none")
+				}
+			})
+
+		})
 	}
 }
 
