@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/alecthomas/participle/v2 v2.0.0
 	github.com/alecthomas/repr v0.2.0
-	github.com/dave/jennifer v1.6.1
+	github.com/dave/jennifer v1.7.0
 	github.com/gofrs/uuid/v5 v5.0.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/sergi/go-diff v1.3.1
