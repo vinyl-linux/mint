@@ -7,7 +7,7 @@ require (
 	github.com/alecthomas/repr v0.2.0
 	github.com/dave/jennifer v1.6.1
 	github.com/gofrs/uuid/v5 v5.0.0
-	github.com/iancoleman/strcase v0.2.0
+	github.com/iancoleman/strcase v0.3.0
 	github.com/sergi/go-diff v1.3.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
