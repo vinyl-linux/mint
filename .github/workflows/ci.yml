@@ -6,8 +6,11 @@ on:
       - '*'
     tags:
       - '*'
+  pull_request:
+    branches:
+      - '*'
 
-#permissions: read-all
+permissions: read-all
 
 jobs:
   test:
