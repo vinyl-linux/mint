@@ -9,7 +9,7 @@ require (
 	github.com/gofrs/uuid/v5 v5.0.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/sergi/go-diff v1.3.1
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.16.0
 	golang.org/x/mod v0.12.0
 )
