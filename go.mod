@@ -11,7 +11,7 @@ require (
 	github.com/sergi/go-diff v1.3.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.19.0
-	golang.org/x/mod v0.15.0
+	golang.org/x/mod v0.17.0
 )
 
 require (
