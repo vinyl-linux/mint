@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/participle/v2 v2.1.1
 	github.com/alecthomas/repr v0.4.0
 	github.com/dave/jennifer v1.7.0
-	github.com/gofrs/uuid/v5 v5.0.0
+	github.com/gofrs/uuid/v5 v5.2.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/sergi/go-diff v1.3.1
 	github.com/spf13/cobra v1.8.0
