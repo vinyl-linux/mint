@@ -53,8 +53,7 @@ type EnumEntry struct {
 type EnumValue struct {
 	Pos lexer.Position
 
-	Key   string `@Ident`
-	Value int    `"=" @( [ "-" ] Int )`
+	Key string `@Ident`
 }
 
 type Type struct {

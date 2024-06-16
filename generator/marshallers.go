@@ -56,6 +56,13 @@ func (g Generator) marshallMap(t string, e parser.AnnotatedEntry) jen.Code {
 
 }
 
+func (g Generator) marshallEnum(t string) jen.Code {
+	return jen.Func().Params(jen.Id("sf").Id(t)).Id("Marshall").Params(jen.Id("w").Qual("io", "Writer")).Params(jen.Id("err").Id("error")).
+		Block(
+			jen.Return(jen.Qual(mintPath, "NewByteScalar").Call(jen.Id("byte").Call(jen.Id("sf"))).Dot("Marshall").Call(jen.Id("w"))),
+		)
+}
+
 func marshallerInitialiser(dt string) jen.Code {
 	if _, ok := parser.Scalars[dt]; ok {
 		i, _, _ := scalarToMintJen(dt)

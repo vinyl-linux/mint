@@ -295,44 +295,41 @@ var (
 								Line:     19,
 								Column:   3,
 							},
-							Key:   "A",
-							Value: 1,
+							Key: "A",
 						},
 					},
 					{
 						Pos: lexer.Position{
 							Filename: "valid input works",
-							Offset:   366,
+							Offset:   361,
 							Line:     20,
 							Column:   3,
 						},
 						Value: &EnumValue{
 							Pos: lexer.Position{
 								Filename: "valid input works",
-								Offset:   366,
+								Offset:   361,
 								Line:     20,
 								Column:   3,
 							},
-							Key:   "B",
-							Value: 2,
+							Key: "B",
 						},
 					},
 					{
 						Pos: lexer.Position{
 							Filename: "valid input works",
-							Offset:   375,
+							Offset:   365,
 							Line:     21,
 							Column:   3,
 						},
 						Value: &EnumValue{
 							Pos: lexer.Position{
 								Filename: "valid input works",
-								Offset:   375,
+								Offset:   365,
 								Line:     21,
 								Column:   3,
 							},
-							Key:   "C",
-							Value: 3,
+							Key: "C",
 						},
 					},
 				},
@@ -381,9 +378,9 @@ type Foo {
 }
 
 enum Bar {
-  A = 1;
-  B = 2;
-  C = 3;
+  A
+  B
+  C
 }
 `
 

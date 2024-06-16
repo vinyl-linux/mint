@@ -108,6 +108,21 @@ func (g Generator) unmarshallScalar(t string, e parser.AnnotatedEntry) jen.Code 
 		)
 }
 
+func (g Generator) unmarshallEnum(e parser.Enum) jen.Code {
+	initialiser, nilValue, _ := scalarToMintJen("uint8")
+
+	return jen.Func().Params(jen.Id("sf").Op("*").Id(e.Name)).Id("Unmarshall").Params(jen.Id("r").Qual("io", "Reader")).Params(jen.Id("err").Id("error")).
+		Block(
+			jen.Id("f").Op(":=").Add(initialiser).Call(nilValue),
+			jen.Id("err").Op("=").Id("f").Dot("Unmarshall").Call(jen.Id("r")),
+			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
+				jen.Return(),
+			),
+			jen.Id("*sf").Op("=").Id("f").Dot("Value").Call().Assert(jen.Id(e.Name)),
+			jen.Return(),
+		)
+}
+
 func unmarshallSlicePreludeGetLen(e parser.AnnotatedEntry) []jen.Code {
 	return []jen.Code{
 		jen.Id("f").Op(":=").Id("mint").Dot("NewSliceCollection").Call(jen.Id("nil"), jen.Id("false")),
