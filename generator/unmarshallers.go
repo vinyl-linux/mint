@@ -118,7 +118,7 @@ func (g Generator) unmarshallEnum(e parser.Enum) jen.Code {
 			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
 				jen.Return(),
 			),
-			jen.Id("*sf").Op("=").Id("f").Dot("Value").Call().Assert(jen.Id(e.Name)),
+			jen.Id("*sf").Op("=").Id(e.Name).Call(jen.Id("f").Dot("Value").Call().Assert(jen.Id("byte"))),
 			jen.Return(),
 		)
 }
