@@ -57,13 +57,15 @@ func TestGenerator_Generate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expect := "h1:4zaocS5qbH8uRHYYKVq6ohH4QevkDfTBqm6PhUgTbrI="
+	expect := "h1:MCTzrW/TITvfxtJO5tfLuhPU7Vdsf2hsLzhJoz/if/k="
 	received, err := dirhash.HashDir(dir, "", dirhash.DefaultHash)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if expect != received {
+		t.Log(dir)
+
 		t.Fatalf("expected %q, received %q", expect, received)
 	}
 }
@@ -249,7 +251,7 @@ func TestGenerator_generateValuer(t *testing.T) {
 	expect := `func (sf SomeTestType) Value() any {
 	return sf
 }`
-	received := codeToString(g.generateValuer(simpleType))
+	received := codeToString(g.generateValuer(simpleType.Name))
 
 	if expect != received {
 		t.Errorf("expected\n%s\nreceived\n%s", expect, received)

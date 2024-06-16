@@ -26,4 +26,14 @@ type Location {
     +mint:doc:"ID is a UUID representing this location and is"
     +mint:doc:"ever unchanging (whereas the Location name may)"
     uuid ID = 5;
+
+    +mint:doc:"Type of location this is, such as home or whatever"
+    LocationType Type = 6;
+}
+
+enum LocationType {
+     Home
+     Work
+     School
+     Other
 }

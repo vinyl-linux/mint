@@ -44,10 +44,11 @@ func New(doc *parser.AST, options *GeneratorOptions) (g *Generator, err error) {
 // Generate will create:
 //
 //  1. Type definitions
-//  2. Validations
-//  3. Transforms
-//  4. Unmarshallers; and
-//  5. Marshallers
+//  2. Enums
+//  3. Validations
+//  4. Transforms
+//  5. Unmarshallers; and
+//  6. Marshallers
 //
 // For each type defined in an AST
 func (g *Generator) Generate() (err error) {
@@ -65,40 +66,14 @@ func (g *Generator) Generate() (err error) {
 		}
 	}
 
+	for _, e := range g.ast.Enums {
+		err = g.generateForEnum(e)
+		if err != nil {
+			return
+		}
+	}
+
 	return
-}
-
-func (g *Generator) generateForType(t parser.AnnotatedType) (err error) {
-	g.customFunctions = make([]jen.Code, 0)
-
-	ret := jen.NewFile(g.PackageName)
-
-	ret.Add(g.generateTypeDefinition(t))
-	ret.Add(g.generateValidations(t))
-	ret.Add(g.generateTransformations(t))
-	ret.Add(g.generateValuer(t))
-
-	// We need to manually run these loops, rather than exploding
-	// the output of generateUnmarshaller (etc.) as per:
-	//
-	//  ret.Add(g.generateUnmarshaller(t)...)
-	//
-	// because doing so creates invalid code for whatever
-	// reason
-	for _, u := range g.generateUnmarshaller(t) {
-		ret.Add(u)
-	}
-
-	for _, u := range g.generateMarshaller(t) {
-		ret.Add(u)
-	}
-
-	err = g.writeSkeletons(t.Name)
-	if err != nil {
-		return
-	}
-
-	return ret.Save(filepath.Join(g.Directory, strings.Join([]string{strings.ToLower(t.Name), "go"}, ".")))
 }
 
 func (g Generator) writeSkeletons(tn string) (err error) {
@@ -120,23 +95,6 @@ func (g Generator) writeSkeletons(tn string) (err error) {
 	}
 
 	return
-}
-
-// generateTypeDefinition creates the top level struct from names, types, and
-// doc strings
-func (g *Generator) generateTypeDefinition(at parser.AnnotatedType) (c jen.Code) {
-	fields := make([]jen.Code, 0)
-	for _, f := range at.Entries {
-		if len(f.DocString) > 0 {
-			fields = append(fields, jen.Null().Comment(f.DocString))
-		}
-
-		fields = append(fields, jen.Null().Id(f.Name).Add(toJenType(f.Field)))
-	}
-
-	return jen.Null().Type().Id(at.Name).Struct(
-		fields...,
-	)
 }
 
 // generateValidations creates calls to both mint and custom
@@ -321,8 +279,8 @@ func (g *Generator) generateMarshaller(at parser.AnnotatedType) (j []jen.Code) {
 // This valuer is, more or less, a no-op; it's there to implement the interface
 // mint.MarshallerUnmarshallerValuer that allows us to work with binary
 // representations of more complex, or exciting types
-func (g *Generator) generateValuer(at parser.AnnotatedType) jen.Code {
-	return jen.Func().Params(jen.Id("sf").Id(at.Name)).Id("Value").Params().Params(jen.Id("any")).
+func (g *Generator) generateValuer(n string) jen.Code {
+	return jen.Func().Params(jen.Id("sf").Id(n)).Id("Value").Params().Params(jen.Id("any")).
 		Block(
 			jen.Return(jen.Id("sf")),
 		)
@@ -386,7 +344,7 @@ func scalarToMintJen(ts string) (c, nilValue, castType jen.Code) {
 	case "bool":
 		return jen.Qual(mintPath, "NewBoolScalar"), jen.Lit(false), jen.Id(ts)
 
-	case "byte":
+	case "byte", "uint8":
 		return jen.Qual(mintPath, "NewByteScalar"), jen.Id("byte").Call(jen.Lit('\x00')), jen.Id(ts)
 	}
 
