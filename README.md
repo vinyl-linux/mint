@@ -94,7 +94,7 @@ These distinctions are explored further in [parser/](parser/)
 ## Installation
 
 ```bash
-$ curl https://github.com/vinyl-linux/mint/releases/download/0.1.0/mint -o /usr/local/bin/mint
+$ curl https://github.com/vinyl-linux/mint/releases/download/0.4.0/mint -o /usr/local/bin/mint
 $ mint
 mint, a contraction of Message Interchange, is a binary message format
 (similar to protobuf, thrift, etc.) designed to provide fast serialisation,
