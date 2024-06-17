@@ -128,7 +128,7 @@ func (g *Generator) generateValidations(at parser.AnnotatedType) (c jen.Code) {
 							jen.Id("errors"), jen.Id("err")),
 					),
 				),
-			jen.Return().Id("mint").Dot("ValidationErrors").Call(jen.Lit(at.Name), jen.Id("errors")),
+			jen.Return().Qual(mintPath, "ValidationErrors").Call(jen.Lit(at.Name), jen.Id("errors")),
 		)
 }
 
