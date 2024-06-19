@@ -119,6 +119,9 @@ func (g Generator) unmarshallEnum(e parser.Enum) jen.Code {
 				jen.Return(),
 			),
 			jen.Id("*sf").Op("=").Id(e.Name).Call(jen.Id("f").Dot("Value").Call().Assert(jen.Id("byte"))),
+			jen.If(jen.Id("*sf").Op("<").Lit(1).Op("||").Id("*sf").Op(">").Lit(len(e.Values))).Block(
+				jen.Return(jen.Qual("errors", "New").Call(jen.Lit("invalid value for type "+e.Name))),
+			),
 			jen.Return(),
 		)
 }

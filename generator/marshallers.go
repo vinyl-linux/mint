@@ -56,9 +56,12 @@ func (g Generator) marshallMap(t string, e parser.AnnotatedEntry) jen.Code {
 
 }
 
-func (g Generator) marshallEnum(t string) jen.Code {
-	return jen.Func().Params(jen.Id("sf").Id(t)).Id("Marshall").Params(jen.Id("w").Qual("io", "Writer")).Params(jen.Id("err").Id("error")).
+func (g Generator) marshallEnum(e parser.Enum) jen.Code {
+	return jen.Func().Params(jen.Id("sf").Id(e.Name)).Id("Marshall").Params(jen.Id("w").Qual("io", "Writer")).Params(jen.Id("err").Id("error")).
 		Block(
+			jen.If(jen.Id("sf").Op("<").Lit(1).Op("||").Id("sf").Op(">").Lit(len(e.Values))).Block(
+				jen.Return(jen.Qual("errors", "New").Call(jen.Lit("invalid value for type "+e.Name))),
+			),
 			jen.Return(jen.Qual(mintPath, "NewByteScalar").Call(jen.Id("byte").Call(jen.Id("sf"))).Dot("Marshall").Call(jen.Id("w"))),
 		)
 }

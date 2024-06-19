@@ -19,7 +19,7 @@ func (g *Generator) generateForEnum(t parser.Enum) (err error) {
 	ret.Add(g.generateEnumValues(t))
 
 	// Create marshaller, unmarshaller, valuer
-	ret.Add(g.marshallEnum(t.Name))
+	ret.Add(g.marshallEnum(t))
 	ret.Add(g.unmarshallEnum(t))
 	ret.Add(g.generateValuer(t.Name))
 

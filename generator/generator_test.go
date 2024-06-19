@@ -57,7 +57,7 @@ func TestGenerator_Generate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expect := "h1:5fWsiSbALtTJUKQ9O/f7uj83i+Sy/WmpFgvOOk4vrsA="
+	expect := "h1:FPfwu0DVYm5hDfJSql2eCLmfV8m1L/iKYkpdX75ZmqI="
 	received, err := dirhash.HashDir(dir, "", dirhash.DefaultHash)
 	if err != nil {
 		t.Fatal(err)
