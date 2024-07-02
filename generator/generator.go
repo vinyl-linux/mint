@@ -346,6 +346,9 @@ func scalarToMintJen(ts string) (c, nilValue, castType jen.Code) {
 
 	case "byte", "uint8":
 		return jen.Qual(mintPath, "NewByteScalar"), jen.Id("byte").Call(jen.Lit('\x00')), jen.Id(ts)
+
+	case "uint16":
+		return jen.Qual(mintPath, "NewUint16Scalar"), jen.Id("uint16").Call(jen.Lit(0)), jen.Id(ts)
 	}
 
 	return jen.Id("new"), jen.Id(ts), jen.Id(ts)
