@@ -318,3 +318,25 @@ func (s *BoolScalar) Unmarshall(r io.Reader) (err error) {
 func (s BoolScalar) Value() any {
 	return s.v
 }
+
+type Uint16Scalar struct {
+	v uint16
+}
+
+func NewUint16Scalar(i uint16) *Uint16Scalar {
+	return &Uint16Scalar{
+		v: i,
+	}
+}
+
+func (s *Uint16Scalar) Marshall(w io.Writer) error {
+	return binary.Write(w, binary.LittleEndian, s.v)
+}
+
+func (s *Uint16Scalar) Unmarshall(r io.Reader) (err error) {
+	return binary.Read(r, binary.LittleEndian, &s.v)
+}
+
+func (s Uint16Scalar) Value() any {
+	return s.v
+}

@@ -625,6 +625,62 @@ func TestBoolScalar(t *testing.T) {
 	}
 }
 
+func TestUint16Scalar(t *testing.T) {
+	for _, test := range []struct {
+		name           string
+		i              uint16
+		expectWriteErr bool
+		expectReadErr  bool
+	}{
+		{"Zero value should remain as such", uint16(0), false, false},
+		{"Malformed zero value should remain as such", uint16(0000000), false, false},
+		{"Large number with underscore delimeter should remain as such", uint16(10_000), false, false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			v := NewUint16Scalar(test.i)
+			if v == nil {
+				t.Fatalf("expected instance of Uint16Scalar, received null")
+			}
+
+			b := new(bytes.Buffer)
+			t.Run("Marshall", func(t *testing.T) {
+				err := v.Marshall(b)
+				if err == nil && test.expectWriteErr {
+					t.Errorf("expected error, received none")
+				} else if err != nil && !test.expectWriteErr {
+					t.Errorf("unexpected error %#v", err)
+				}
+
+				if b.Len() == 0 {
+					t.Errorf("no bytes were written")
+				}
+			})
+
+			t.Run("Unmarshall", func(t *testing.T) {
+				v = new(Uint16Scalar)
+
+				err := v.Unmarshall(b)
+				if err == nil && test.expectReadErr {
+					t.Errorf("expected error, received none")
+				} else if err != nil && !test.expectReadErr {
+					t.Errorf("unexpected error %#v", err)
+				}
+
+				if b.Len() > 0 {
+					t.Errorf("bytes left over: %#v", b.Bytes())
+				}
+			})
+
+			t.Run("Value", func(t *testing.T) {
+				received := v.Value().(uint16)
+				if test.i != received {
+					t.Errorf("expected %v, received %v", test.i, received)
+				}
+			})
+		})
+	}
+}
+
 func makeLongString() string {
 	sb := strings.Builder{}
 	for i := 0; i < 100_000; i++ {
