@@ -25,7 +25,7 @@ func TestValidationErrors(t *testing.T) {
 
 			// cynical way of getting test coverage up
 			if err != nil {
-				t.Logf(err.Error())
+				t.Logf("%#v", err)
 			}
 		})
 	}

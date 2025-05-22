@@ -47,7 +47,7 @@ func BenchmarkMarshall(b *testing.B) {
 				ManyLongStrings:  bench.longStringSlice,
 			}
 
-			for n := 0; n < b.N; n++ {
+			for b.Loop() {
 				buf := new(bytes.Buffer)
 
 				err := bb.Marshall(buf)
